@@ -1,0 +1,50 @@
+in this tutorial, we will discuss one of the most impactful architectures of the last 2 years: the
+transformer model. since the paper attention is all you need by V et al. had been published in 2017, 
+the transformer architecture has continued to beat benchmarks in many domains, most importantly in
+natural lanugage processing. transformers with an incredible amount of parameters can 
+
+as the hype of the transformer architecture seems not to come to an end in the next years, it is 
+important to understand how it works, and have implemented it yourself, which we will do in this 
+notebook.
+
+despite the huge success of transformer in nlp, we will not include the nlp domain in our notebook here.
+why? firstly, the master ai at uva offers many great nlp courses that will take a closer look at the 
+application of transformer architecture in nlp. secondly, assignment 2 takes already a closer look at
+language generation on character level, onwhich you could easily apply our transformer architecture. 
+finally, and most importantly, there is so much more to the transformer architecture. nlp is the domain
+the transformer architecture has been originally proposed for and had the greatest impact on, but is 
+also accelerated research in other domains, recently even computer vision. thus, we focus here on what 
+makes the transformer and self-attention so powerful in general. in tutorial 15, we will discuss the 
+application of transformer in computer vision.
+
+below, we import our standard libraries
+
+the transformer architecture
+inthe first part of this notebook, we will implement the transformer architecture by hand
+as the architecture is so popular, there are exists a pytorch module nn.transformer and a
+tutorial on how to use it for next token prediction. however, we will implement it here ourselves,
+to get through to the smallest details.
+there are of course many more tutorial out there about attention and transformers. below, we list
+a few that are worth exploring if you are interested in the topic and might want yet another 
+perspective on the topic after this one
+
+what is attention?
+the attention mechanism describes a recent new group of layers in neural networks that has attracted a
+lot of interest in the past few years, especially in sequence tasks. there are alot of different 
+possible definitions of attention in the literature, but the one we will use here is the following:
+the attention mechanism describes a weighted average of (sequence) elements with the wights dynamically
+computed based on an input query and elements' keys. 
+
+{我认为（全是瞎猜的），query可以理解为，假设我们给了一组长度为10的sequence，那么，我们理应有10份关注。
+比如当t=1的时候，输入为x1，在这样时间下接收到这样的一种输入，我们应该会产生一种特殊的注意力，也就是q1，就好比当我们
+读一段话读到第一个自为“给”的时候，这个时候会对某些词汇，比如物品或者物品的接受者产生更多遐想，而对动词减少一些遐想。
+接着呢，我们再用这份注意力q1，与sequence中的每个词分别去做相似度计算，与谁更相似就能得到更大的权重值a_i。再将
+a_i通过一个softmax层来转换成和为1的概率分布。就得到了最终的权重值a们。最后再用这些权重值去和sequence中的每个词做
+加权平均，就能得到第一个词通过注意力机制转换后的第一个输出。
+这第一个输出，其实是指当注意力机制在第一个位置看到第一个输入这种情况后，
+产生了一份特殊的query，再用第一个query来审视全部输入词后得到的一个加权输出。}
+
+so what does this exactly mean? the goal is to take an average over the features of multiple elements.
+howeverm instead of weighting each element equally, we want to weight them depending on their actual
+values. in other words, we want to dynamically decide on which inputs we want to "attend" more
+than others. in particular, an attention mechanism has usually four parts we neeed to specify:
