@@ -1,0 +1,84 @@
+由于transformer对于俺有点陌生，所以愿意为他另开一个repository！
+
+note from "d2l.ai" tutorial
+
+thank you for your attention to this book. attention is a scarce resource: at the moment you are reading this book and ignoring the rest. thus,
+similar to money, your attention is being paid with an opportunity cost. to ensure that your investment of attention right now is worthwhile, 
+we have been highly motivated to pay our attention carefully to produce a nice book. attention is the keystone in the arch of life and 
+holds the key to any work's exceptionalism.
+
+since economics studies the allocation of scarce resources, we are in the era of the attention economy, where human attention is treated
+as a limited, valuable, and scarce commodity that can be exchanged. numerous business models have been developed to capitalize on it. on
+music or video streaming services, we either pay attention to their ads or pay money to hide them. for growth in the world of online
+games, we either pay attention to participate in battles, which attract new gamers, or pay money to instantly become powerful. nothing comes
+for free.
+
+all in all, information in our environment is not scarce, attention is. when inspecting a visual scene, our optic nerve receives information 
+at the order of 10^8 bits per second, far exceeding what our brain can fully process. fortunately, our ancestors had learned from experience
+(also known as data) that not all sensory inputs are created equal. throughout human history, the capability of directing attention to
+only a fraction of information of interest has enabled our brain to allocate resources more smartly to survive, to grow, and to socialize, 
+such as detecting predators, preys, and mates.
+
+attention cues in biology:
+to explain how our attention is deployed in the visual world, a two-component framework has emerged and been pervasive. this idea dates back 
+to william james in the 1890s, who is considered the "father of american psychology". in this framework, subjects selectively direct the 
+spotlight of attention using both the nonvolitional cue and volitional cue.
+
+{这里这个JAMES提出了一个双元素框架来解释“主体”如何分配“注意力”，他认为当人们观察一个视觉场景的时候，注意力会被“自主意识的“来引导分配，同时也会被”非自主意识“来引导
+分配。}
+
+the nonvolitional cue is based on the saliency and conspicuity of the objects in the environment. imagine there aare five objects in front of
+you: a newspaper, a research paper, a cup of coffee, a notebook, and a book such as in fig.11.1.1. while all the paper products are printed in
+black and white, the coffee cup is red. in other words, this coffee is intrinsically salient and conspicuous in this visual environment, 
+automatically and involuntarily drawing attention. so you bring the fovea (the center of the macula where visual acuity is highest) onto the
+coffee as shown in fig.11.1.1.
+
+{比如，这里讲了一个“非自主意识”支配来分配“主体”注意力资源的例子。当我们的视觉场景里出现多样objects时，总有那么几个object它属于本身具有显著性并且非常吸引人注意力的，
+比如如果面前有报纸，论文，课本，草稿纸，和一台电脑，那么这台电脑就会很显著从而吸引我们不由自主的分配更多的注意力在上面，会将我们视觉系统中最为敏锐的部分fovea分配到电脑上}
+
+after drinking coffee, you become caffeinated and want to read a book. so you turn your head, refocus your eyes, and look at the book as 
+depicted in fig.11.1.2. different from the case in fig.11.1.1 where the coffee biases your towards selecting based on saliency, in this task-
+dependent case you select the book under cognitive and volitional control. using the volitional cue based on variable selection criteria, this 
+form of attention is more deliberate. it is also more powerful with the subject's voluntary effort.
+
+
+
+
+queries, keys, and values:
+inspired by the nonvolitional and volitional attention cues that explain the attentional deployment, in the following we will describe a framework
+for designing attention mechanisms by incorporating these two attention cues.
+{我们将描述一种基于这种“自主意识“和”非自主意识“的注意力机制}
+
+to begin with, consider the simpler case where only nonvolitional cues are available. to bias selection over sensory inputs, we can simply use a 
+parameterized fully connected layer or even non-parameterized max or average pooling.
+
+therefore, what sets attention mechanisms apart from those fully connected layers or pooling layers is the inclusion of the volitional cues. in
+the context of attention mechanisms, we refer to volitional cues as queries
+
+--- 看不下去了；换一下霹雳吧啦Wz的视频学习一下基础概念：
+rnn, lstm问题：记忆有限，无法并行化
+所以提出transformer: 可并行化，不受硬件限制的话记忆无现长
+
+self-attention:
+假设这是一个时序序列为t=1-10的序列。
+也就是我有x1, x2, ..., x10
+这个时候我的q，感觉更像是系统根据我当前时刻的输入xi定做的当前时刻的时序特征提取器，而k则是从输入xi中提取的到的时序特征
+
+
+attention is all you need:
+introduction:
+the dominant sequence transduction models are based on complex recurrent or convolutional neural networks 
+that include an encoder and decoder. the best performing models also connect the encoder and decoder through
+an attention mechanism. we propose a new simple network architecture, the transformer, based soley on 
+attention mechanisms, dispensing with recurrence and convolutions entirely. experiments on two machine 
+translation tasks show these models to be superior in quality while being more parallelizable and requiring 
+significantly less time to train. our model achieves 28.4 bleu on wmt 2014 english to german translation task,
+improving over the existing best results, in 
+
+///
+
+transformer: 第一个只使用了attention mechanism的sequence transduction model
+最开始作者只是想用这个模型做机器翻译
+
+作者在导言上说：
+（1）。
