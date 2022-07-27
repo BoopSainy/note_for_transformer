@@ -48,3 +48,41 @@ so what does this exactly mean? the goal is to take an average over the features
 howeverm instead of weighting each element equally, we want to weight them depending on their actual
 values. in other words, we want to dynamically decide on which inputs we want to "attend" more
 than others. in particular, an attention mechanism has usually four parts we neeed to specify:
+
+
+query: the query is a feature-capture vector that describes what we are looking for in the sequence, i.e. 
+what would we maybe want to pay attention to. (UNDER current input and current time*(might position in image))
+
+keys: for each input element, we have a key which is again a feature vector. this feature vector roughly
+describes what the element is "offering", or when it might be important. the keys should be designed 
+such that we can identify the elements we want to pay attention to based on the query.
+
+values: for each input element, we also have a value vector. this feature vector is the one we want to 
+average over.
+
+score function: to rate which elements we want to pay attention to, we need to specify a score function
+fattn. the score function takes the query and a key as input, and output the score/attention weight of 
+the query-key pair. it is usually implemented by simple similarity metrics like a dot product, or a small
+MLP
+
+the weights of the average are calculated by a softmax over all score function outputs. hence, we assign those
+value vectors a higher weight whose corresponding key is most similar to the query.
+{所以呢，依鄙人之见，对于同一个input xi, 它的key k1, 和 value v1 是很相似的，都是它本身的一种抽象表达，！！！这里很重要的
+一点是，它本身的抽象表达，可不仅仅是它是谁-x1是谁，而是x1加上它的时间编码/位置编码后的表达。
+所以也就是说，当某一个query已经确定后，它如果强调了“我就想看到'出现在第一时刻’的‘x'，那么'出现在第一时刻的x‘就会被给予更多关注。
+而’出现在第7时刻的x1‘可能就不是香饽饽了}
+
+
+most attention mechanisms differ in terms of what queries they use, how the key and value vectors are defined,
+and what score function is used. the attention applied inside the transformer architecture is called self-
+attention. in self-attention, each sequence element provides a key, a value and query. for each element, we
+perform an attention layer where based on its query, 
+
+
+Scaled Dot Product Attention:
+the core concept behind self-attention is the scaled dot product attention. our goal is to have an attention
+mechanism with which any element in a sequence can attend to any other while still being efficient to 
+compute. 
+
+one aspect we haven't discussed yet is the scaling factor of 1/dk^2, this scaling factor is crucial to 
+maintain an appropriate variance of attention values after initialization.
