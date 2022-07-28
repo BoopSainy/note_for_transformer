@@ -86,3 +86,119 @@ compute.
 
 one aspect we haven't discussed yet is the scaling factor of 1/dk^2, this scaling factor is crucial to 
 maintain an appropriate variance of attention values after initialization.
+
+
+multi-head attention:
+the scaled dot product attention allows a network to attend over a sequence. however, often there are multiple 
+different aspects a seqiemce element wants to attend to, and a single weighted average is not a good option for
+it.
+{这里可以理解为，如果一个element input只能拥有一个长query，那么这个长query其实是包含了很多个小层面上的关注的。我们假设x1的抽象表达
+为k1，x2的抽象表达为k2，这个时候，q1k1和q1k2的值很可能很接近，但是实际上，我们可以想象一下，其实k1和k2是相差甚远的，只不过可能k1与q1的
+一小段相似度很高，而k2则是与q1的另一小段相似度很高，导致q1k1和q1k2的结果相似，但是这两个相似的小段是不同的两小段。
+
+比如q1 = [10, 0, 0, 0, 0, 10]
+k1 = [10, 1, 1, 1, 1, 1]
+k2 = [1, 1, 1, 1, 1, 10]
+
+此时a1 = a2 = 110， 看似通过q1之后我们需要给x1和x2的相同的注意力权重，也就是说 我们最终的att1 = 0.5*v1 + 0.5*v2。
+但是这样存在的问题就是， 当我们细致到v1v2上的每个entry的时候，我们也给了每个entry同样的注意力。
+但是实际上，k1的第一个entry远比k2的第一个entry要与q1的第一个entry更相似，它理应获得更多的注意力。
+
+所以，我们引入多头注意力机制，我们要把q1拆分成很多段，q11 q12 q13... 同时也把k1 k2和v1 v2拆分成很多段， 我们将细致地
+考量，不同输入x的每一小段值得多少注意力投入，也就是要得到weighted average vt1, weighted average vt2, ... weighted average vtn，
+再将这些小段concatenate起来。
+
+}
+
+{
+文章的作者其实将multi-head这里综合叙述成了是通过head_num个线性映射得到head_num组Q,K,V。 我们前述的算是一种简单的特殊情况
+}
+this is why we extend the attention mechanisms to multiple heads, i.e. multiple different query-key-values triplets 
+on the same features. specifically, given a query, key, and value matrix, we transform those into h sub-queries,
+sub-keys, and sub-values, which we pass through the scaled dot product attention independently. afterward, we
+concatenate the heads and combine them with a final weigh matrix. 
+
+how are we applying a multi
+looking at the computation graphy above, a simple but effective implementation is to set the current feature
+map in NN, X(- R^BxTxdmodel, as Q, K, and V (B being the batch size, T the sequence length, dmodel the hidden
+dimensionality of X). the consecutive weight matrices WQ, WK, and Wv can transform X to the corresponding feature
+vectors that represents
+
+our crucial characteristic of the multi-head attention is that it is permutation-equivariant with
+respect to its inputs.
+{when we dont add position encoding, if we switch two input elements in the sequence, e.g. X1 <-> X2, the
+output is exactly the same besides the elements 1 and 2 switched. hence, the multi-head attention is
+actually looking at the input not as a sequence, but as a set of elements. this property makes the 
+multi-head attention block and the transformer architecture so powerful and widely applicable! but 
+what if the order of the input is actually important for solving the task, like language modeling?
+the answer is to encode the position in the input features, which we will take a closer look at 
+later (topic positional encodings below)}
+
+before moving on to create the transformer architecture, we can compare the self-attention operation with
+our other common layer competitors for sequence data: convolutions and recurrent neural networks. below
+you can find a table by V et al. on the complexity per layer, the number of sequential operations, and
+maximum path length. the complexity is measured by the upper bound of the number of operations to perform,
+while the maximum path length represents the maximum number of steps a forward orbackward signal has to 
+traverse to reach any other position
+
+next we will look at how to apply the multi-head attention block inside the transformer architecture.
+originally, the transformer model was designed for macine translation. hence, it got an encoder-decoder
+structure where the encoder takes as input the sentence in the original language and generates an 
+attention-based representation. on the other hand, the decoder attends over the encoded information
+and generates the translated sentence in an autoregressive manner, as in a standard rnn. while this 
+structure is extremely useful for sequence-to-sequence tasks with the necessity of autoregressive decoding,
+we will focus here on the encoder part.
+{这个作者在这里只关注编码器}
+many advances in nlp have been made using pure encoder-based transformer models (if interested, models
+include the BERT-family, the vision transformer, and more), and in our tutorial, we will also mainly
+focus on the encoder part. if you have understood the encoder architecture, the decoder is a very small
+step to implement as well. the full transfomer architecture looks as follow
+
+the encoder consists of N identical blocks that are applied in sequence. taking as input x, it is first
+passed through a multi-head attention block as we have implemented above. the output is added to the
+original input using a residual connection, and we apply a consecutive Layer Normalization on the sum.
+overall, it calculates LayerNorm(x + Multihead(x, x, x)) (x being Q, K, V input to the attention layer).
+the residual connection is crucial in the transformer architecture for two reasons:
+
+1. similar to resnets, transformers are designed to be very deep. some models contain more than 24 blocks
+in the encoder. hence, the residual connections are crucial for enabling a smooth gradient flow through
+the model.
+
+2. without the residual connection, the information about the original sequence is lost. remember that 
+the multi-head attention layer ignores the position of elements in a sequence, and can only learn it 
+based on the input features. removing the residual connections would mean that this information is lost
+after the first attention layer (after initialization), and with a randomly initialized query and key vector
+
+the layer normalization also plays an importatn role in the transformer architecture as it enables faster
+training and provides samll regularization. additionallyy, it ensures that the features are in a similar
+magnitude among the elements in the sequence. we are not using batch normalization because it depends on 
+the batch size which is often small with transformers (they require alot of GPU memory), and BatchNorm
+has shown to perform particualy bad in language as the features of words tend to have a much higher variance
+(there are many, very rare words which need to be considered for a good distribution estimate).
+
+additionally to the multi-head attention, a small fully connected feed-forward network is added to the
+model, which is applied to each position separatly and identically. 
+{在多头注意力层结束后，假设我们batch size为1，那么这个时候，我们应该是由seq_len个输出（维度为embed_dim），这个时候，我们
+再将每一个输出分别输送进完全一样的fully connected feed-forward network}
+specifically, the model uses a linear->relu->linear mlp. the full transformation including the residual 
+connection can be expressed as
+
+this mlp adds extra complexity to the model and allows transformations on each sequence element separately.
+you can imagine as this allows the model to "post-process" the new information added by the previous
+multi-head attention, and prepare it for the next attention block. usually,
+
+finally, after looking at all parts of the encoder architecture, we can start implementing it below.
+we first start by implementing a single encoder block. additionally to the layers described above, we 
+will add dropout layers in the mlp and on the output of the mlp and multi-head attention for regularization.
+
+
+based on this block, we can implement a module for the full transformer encoder. additionally to a forward
+function that iterates through the sequence of encoder blocks, we also provide a function called 
+get_attention_maps. the idea of this function is to return the attention probabilities for all multi-head
+attention blocks in the encoder. this helps us in understanding, and in a sense, explaining the model. 
+however, the attention probabilities should be interpreted with a grain salt as it does not
+necessarily reflect the true interpretation of the model (there is a series of papers about this, including
+attention is not explanation and attention is not not explanation).
+
+{作者认为，我们应当对multi-head attention layer得到的attention probability tensor是否能解读model干了什么持保留意见，
+现在有很多不同的声音}
