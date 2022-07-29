@@ -7,3 +7,26 @@ what benefits and drawbacks do they offer in contrast to cnns? we will answer th
 implementing a vision transformer ourselves and train it on the popular, small dataset
 cifar10. we will compare these results to the convolutional architectures of t5
 
+# transformers for image classification
+# transformers have been originally proposed to process sets since it is a
+# permutation-equivariant architecture, i.e., producing the same output permuted
+# if the input is permuted. to apply transformers to sequences, we have simply added
+# a positional encoding to the input feature vectors, and the model learned by 
+# itself what to do with is. so, why not do the same thing on images? this is 
+# exactly what alexy dosovitskiy et al. proposed in their paper "An Image is Worth
+# 16x16 Words: Transformer for Image Recognition at Scale". Specifically, the Vision
+# Transformer is a model for image classification that views images as sequences
+# of smaller patches. As a preprocessing step, we split an image of, for example,
+# 48x48 pixels into 9 16x16 patches. Each of those patches is considered to be 
+# a "word/token" and projected to a feature space. with adding positional encodings
+# and a token for classification on top, we can apply a Transformer as usual to
+# this sequence and start training it for our task. A nice GIF visualization of the
+# architecture is shown below.
+
+# we will walks step by step through the Vision Transformer, and implement all parts 
+# by ourselves. first, let's implement the image preprocessing: an image of size NxN
+# has to be split into (N/M)^2 patches of size MxM. These represent the input
+# words to the Transformer.
+
+{ViT，一张大图需要被等分成多个小图，每个小图被视为language tasks中的一个token，这张大图可以时为是一个token sequence}
+
