@@ -202,3 +202,68 @@ attention is not explanation and attention is not not explanation).
 
 {作者认为，我们应当对multi-head attention layer得到的attention probability tensor是否能解读model干了什么持保留意见，
 现在有很多不同的声音}
+
+
+positional encoding
+we have discussed before that the multi-head attention block is permutation-equivariant, and cannot distinguish
+whether an input comes before another one in the sequence or not. in tasks like language understanding,
+however, the position is important for interpreting the input words. the position information can therefore
+be added via the input features. we could learn a embedding for every possible position, but this would not
+generalize to a dynamical input sequence length.
+{这种position embedding不能泛化到动态输入长度的sequence上} hence, the better option is to use feature patterns that
+the network can identify from the features and potentially generalize to larger sequences.
+
+pe(pos, i) represents the position encoding at position pos in the sequence, and hidden dimensionality i.
+these values concatenated for all hidden dimensions, are added to the original input features (in the 
+Transformer visualization above, see "positional encoding"), and constitute the position information. we 
+distinguish between even (i mod 2 = 0) and uneven(i mod 2 = 1) hidden dimensionalities where we apply
+a sine/cosine respectively. the intuition behind this encoding is that you can represent PE(pos+k,:) as 
+a linear function of PE(pos, :), which might allow the model to easily attend to relative positions. the
+wavelengths in different dimensions range from 2pi to 10000*2pi.
+
+{在transformer encoder里，当输入进入到第一个encoder block前，这组input elements会分别sum上自己的位置编码。
+位置编码让模型知道这个序列中elements的位置关系，假设我们batch size为1，然后这组sequence里有20个input elements，
+每个elements的维度为30.
+
+也就是说，我们现在有30个position上有element准备输入，然后呢。
+位置编码是pos_num和input_dim的函数。
+我们会为每个位置上准备一个维度为input_dim的位置编码，再将这个pe_pos与对应位置上的input element相加，送到第一个
+encoder block里}
+
+{需要注意的是，因为PE只是input element的位置，以及input element的维度的函数， 所以对于不同的sequence，它们每一个位置上的
+PE理应是一样的}
+
+{作者写的positional encoding思路是，
+给定element input dim,
+然后直接生成一组供所有sequence使用的position encoding matrix，
+而且它直接就准备好超常的一个序列，max_pos_length = 一个很大的数
+最后我们使用的时候，只需要拿需要的前多少pos就可以了
+}
+
+to understand the positional encoding, we can visualize it below. we will generate am image of the position
+encoding over hidden dimensionality and position in a sequence
+
+
+Learning rate warm-up
+one commonly used technique for training a transformer is learning rate warm-uup. this means that we 
+gradually increase the learning rate from 0 on to our originally specified learning rate in the 
+first few iterations. thus, we slowly start learning instead of taking very large steps from the beginning.
+in fact training a deep transformer without learning rate warm-up can make the model diverge and achieve
+a much worse performance on training and testing. take for instance the following plot by Liu et al.
+comparing adam-vanilla (i.e. adam without warm-up) vs adam with a warm-up
+
+clearly, the warm-up is a crucial hyperparameter in transformer architecture. why is it so important?
+there are currently two common explanations. first, adam uses the bias correction factors which however 
+can lead to a higher variance in the adaptive learning rate
+
+secondly, the iteratively applied layer normalization across layers can lead to very high gradients during the 
+first iterations, which can be solved by using pre-layer normalization
+
+nevertheless, many applications and papers still use the original transformer architecture with adam,
+because warm-up is a simple, yet effective way of solving the gradient problem in the first iterations.
+there are many different schedulers we could use. for instance, the original transformer paper used an
+exponential decay scheduler with a warm-up. however, the currently most popular scheduler is the
+cosine warm-up scheduler, which combines warm-up with cosine-shaped learning rate decay. we
+can implement it below and visualize the learning rate factor over epochs.
+
+
