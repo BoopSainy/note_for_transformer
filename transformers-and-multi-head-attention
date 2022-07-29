@@ -267,3 +267,4 @@ cosine warm-up scheduler, which combines warm-up with cosine-shaped learning rat
 can implement it below and visualize the learning rate factor over epochs.
 
 
+{learning rate warm-up, 先让学习率从小到大增长到设定的学习率大小，再让学习率逐渐decay的过程}
