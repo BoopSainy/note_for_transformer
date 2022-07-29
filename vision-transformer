@@ -1,0 +1,9 @@
+
+in this tutorial, we will take a closer look at a recent new trend: transformers for computer vision
+since Alexey D et al. successfully applied a transformer on a variety of image recognition benchmarks,
+there have been an incredible amount of follow-up works showing that cnns might not be optimal 
+architecture for computer vision anymore. but how do vision transformer work exactly, and
+what benefits and drawbacks do they offer in contrast to cnns? we will answer these questions by
+implementing a vision transformer ourselves and train it on the popular, small dataset
+cifar10. we will compare these results to the convolutional architectures of t5
+
