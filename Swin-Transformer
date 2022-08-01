@@ -2,3 +2,97 @@ first, list some helpful tutorials for swin-transformer:
  https://noisrucer.github.io/paper/Swin_Transformer/
  https://ai-scholar.tech/en/articles/medical/swin-unet
  https://ieeexplore.ieee.org/document/9686686
+
+
+swin transformer is a hirarchical vision transformer that was published in 2021 and selected as the best paper at iccv 2021.
+transformer has been extensively used in natural language proecssing fields since attention is all you need paper come out
+in 2017 which uses attention mechanism. many efforts have been made such as vit to apply transformer to computer vision fields.
+the vision transformer was successful in image classification but had drawbacks: 1) suboptimal for dense pprediction such as
+semantic segmentation and object detection, 2) quadratic computational complexity to the input size due to the global 
+attention computation.
+
+challenges to apply transformer from nlp to computer vision tasks comes from the intrinsic differences between the nature of them 
+including 1) large variations in the scale of visual entities and 2) high resolution of pixels in images. swin transformer
+uses hiearchical architecture to address those issues where the representation is computed with shifted windows.
+
+the authors suggest that swin transformer could be potentially used as a general-purpose backbone for computer vision
+
+the implementation is from the official pytorch implementation with some modifications and very detailed comments
+
+hierarchical feature maps
+transformers have been applied for computer vision not only for nlp as vit showed great performance especially for classification
+tasks. however, the existing transformers (as of 2021) result in suboptimal performance in many computer vision application due to,
+1. fixted token scale for attention - unsuitable for dense predictions like object detection and semantic segmentation
+2. bad computational complexity (quadratic to image size)
+
+swin transformer address the first problem with dierarchical feature map which starts with small-sized patches and gradually 
+merge neighboring patches (patch merging) as the network gets deeper. intuitively, this hierarchical feature map could
+potentially capture smaller features of the visual entities, thus enhancing the dense prediction capability.
+
+shifted window
+the key design element of swin transformer is the shifted window between consecutive self-attention layers as illustrate 
+{最初想的是把一张图用多个windows分割，然后每个window里面包含固定数量的patches，然后在window里面locally perform multi-head atention。
+但是这样的话，模型无法捕捉到windows之间的connection}
+
+before feeding into the swin transformer blocks, we first need to perform patch partition on the rgb input image to convert
+to non-overlapping patches. ecah patch is treated as a token for attention and its feature is set as a concatenation of the raw 
+pixel rgb values which means we flatten all the pixels in each patch(token). in the paper, patch size = 4x4. thus, the feature
+dimension for one patch is 4x4x3 = 48 including rgb channel dimension. before we move on, let's see the number details which 
+are important to understand the overall architecture.
+
+image_resolution = 224x224
+patch_size = 4x4 in terms of pixels per height/width
+number of pixels (features) in one patch = 4x4x3 = 48; 可以理解为，每个patch = 一个token，然后这个48就是token vector的长度
+total number of patches in the whole image = 224/4 x 224/4 = 56 x 56 = 3136
+window_size = 7x7 in terms of patches per height/width; 也就是说，对于一张输入的图片，它在高度和宽度维度上都是有56个patches，一个window有7x7
+patches的话，也就是说我们这张图有8x8个windows
+number of patches in one window = 7x7 = 49
+total number of windows in the whole image = 224/4/7 ^2 = 8x8 = 64
+
+
+linear embedding layer:
+although the architecture in the paper first performs patch partition and the linear embedding, the official implementation 
+first performs embedding (both partition & embedding) and uses window partition module after.
+
+patch embedding
+
+
+
+
+
+{一点点看看人家的代码！！！}
+
+先是要过一个patch embedding layer: including patch partition & linear projection together.
+输入图片是224， PATCH_SIZE是4，也就是说我们可以获得56*56个patch。然后作者直接用了一个kernel_size为patch_size, stride为
+patch_size的2d conv层，融合了patch partition和patch linear projection的操作，本来如果单纯的patch partition
+我们要得到56*56个长度为4*4*3为48的token vector；但是作者直接用in_channel = 3, out_channel = embed_dim的 2d conv，一步
+实现了partition和linear projection， 因为现在得到的token vector长度直接就是embed_dim = 96。
+
+
+{swin transformer block}
+the figure 4 shows the swin transformer block which is the fundamental building block of swin transformer
+
+插一句， swin transfomer architecture
+image -> patch partition -> patch embedding -> swin transformer block
+swin transformer block includes two block
+
+it replaces the standard multi-head self-attention (MSA) module by two types of multi-head self-attention
+modules: W-MSA (window-based MSA) and SW-MSA (shifted-window-based MS). the swin transformer block also uses
+layer normalization layer is applied before each MSA module and each MLP module. also, a residual connection (
+from resnet) is applied after each module.
+
+the above shows the computations of two consecutive transformer blocks (W-MSA and SW-MSA) where z^l hat and z^l
+denote the output features of the (S)W-MSA module and the MLP module for block l
+
+swin transformer block is repeated a few times according to the architectual design which we will talk
+about later on.
+
+
+{shifted-window based self-attention}
+self-attention in non-overlapping windows (W-MSA)
+the left transformer block in fig4 illustrates window-based MSA (W-MSA). an input image is partitioned in to MxM windows
+and self-attention is performed within each window locally. consequently, the computational complexity is improved.
+
+shifted window partitioning in successive blocks (SW-MSA) the right transformer block in fig.4 illustrates shifted window-
+based MSA (SW-MSA). W-MSA cannot provide connections between windows as self-attention is performed only within each window,
+limiting the modeling power. to provide connections between windows while maintaining computational efficiency, shifted
