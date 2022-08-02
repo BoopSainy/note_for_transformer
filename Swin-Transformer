@@ -96,3 +96,31 @@ and self-attention is performed within each window locally. consequently, the co
 shifted window partitioning in successive blocks (SW-MSA) the right transformer block in fig.4 illustrates shifted window-
 based MSA (SW-MSA). W-MSA cannot provide connections between windows as self-attention is performed only within each window,
 limiting the modeling power. to provide connections between windows while maintaining computational efficiency, shifted
+
+
+{swin transformer 的全工作流程}：
+首先是一组 224x224x3的图片输入啦。
+然后对于windows/shifted-windows multi-head self-attention module以外的地方，输入都是以图片img为单位的，在W-MSA/SW-MSA里面，输入是以window为
+单位。
+也就是说，一组B, 3, 224, 224的输入输入进来后，我们先要经过一个patch partition & embedding layer, 这一层的目的就是把一张完整的图片均匀不重叠地分割
+成多个patch，接着对于一个patch里面的pixel进行一个linear projection，得到每一个patch的embedding。最终的输出维度将是 (BxHxWxC), H/W是x/y方向上
+每张图所拥有的patch数量，C是patch_dim，也就是把每个patch原有的pixels们进行embedding映射后得到的映射表达。
+这里partition & embedding操作都可以用一个卷积层来实现。卷积核的大小为(patch_size, patch_size), stride大小为patch_size，那我对一张图片经过一轮
+卷积后，自然输出的feature map dimension就是patch_dim x patch_dim。因为每次卷积的局部对象都是一块被分好的小patch，这块大小就是patch_size x patch_size
+x rgb_channel个Pixel, 也就是分割好的patch里所包含的pixel数量，接下来的卷积操作，对这里的rgb3个channel分别进行卷积操作得到embed_dim 个输出。
+
+B，embed_dim, patch_dim, patch_dim。
+最后进行tensor维度上的变化，得到 (B x patch_nums x embed_dim)的输出。
+
+-----
+从partition & embedding layer出来后，图片信息就要做好准备进入到第一个swin-transformer block了。由于在swin-transformer里面，图片信息需要以
+windows为主，所以需要经过一个windows-partition module，将B, patch_nums, embed_dim的输入转化成 B*win_num, seq_len, embed_dim的维度。
+注意，在我的设定里，seq_len对应的是一个window所包含的patch数量。
+
+从window-partition module出来后，进入W-MSA module， 在这里，首先要经过一个Linear层得到q,k,v ....
+输出为B_, N, C. B_是总windows number, N是patches number in one window, C是Patch_dim。在W-MSA/SW-MSA中做主的是window
+
+从W-MSA出来后需要过一个SW-MSA, 还是window为主。
+
+
+
