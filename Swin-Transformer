@@ -123,4 +123,56 @@ windows为主，所以需要经过一个windows-partition module，将B, patch_n
 从W-MSA出来后需要过一个SW-MSA, 还是window为主。
 
 
+---终于敲完swin-transformer的代码了
+{read paper}
 
+swin transformer: hierarchical vision transformer using shifted windows.
+
+this paper represents a new vision transformer, called swin transformer, that capably serves as a general-purpose backbone
+for computer vision. challenges in adapting transformer from language to vision arise from differences between the two domains, 
+such as large variations in the scale of visual entities and the high resolution of pixels in images compared to words in 
+text. to address these differences, we propose a hierarchical transformer whose representation is computed with shifted
+windows. the shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local
+windows while also allowing for cross-window connection. this hierarchical architecture has the flexibility to model at 
+various scales and has linear computational complexity with respect to image size. these qualities of swin transformer
+make it compatible with a broad range of vision tasks, including image classification (87.3 top-1 accuracy on ImageNet-1k) and
+dense prediction tasks such as object detection (58.7 box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5 
+mIoU on ADE20K val). its performance surpasses the previous state-of-the-art by a large margin of =2.7 box AP and +2.6 mask AP
+on COCO, and +3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based models as vision backbones. the
+hierarchical design and the shifted window approach also prove beneficial for all-MLP architectures. the code and models are
+publicly available at ...
+
+introduction
+modeling in computer vision has long been dominated by convolutional neural networks (cnns). beginning with alexnet and its
+revolutionary performance on the imagenet image classification challenge, cnn architectures have evolved to become increasingly
+powerful through greater scale, more extensive connections, and more sophisticated forms of convolution. with cnns serving 
+as backbone networks for a variety of vision tasks, these architectural advances have led to performance improvements
+that have broadly lifted the entire field.
+on the other hand, the evolution of network architectures in natural language processing has taken a different path, where
+the prevalent architecture today is instead the transformer. designed for sequence modeling and trasduction tasks, the 
+transformer is notable for its use of attention to model long-range dependencies in the data. its tremendous success in
+the language domain has led researches to investigate its adaptation to computer vision, where it has recently demonstrated
+promising results on certain tasks, specifically image classification and joint vision-language modeling.
+in this paper, we seek to expand the applicability of transformer such that it can serves as a general-purpose backbone for 
+computer vision, as it does for nlp and as cnns do in vision. we observe that significant challenges in transferring its high
+performance in the language domain to the visual domain can be explained by differences between the two modalities. one of
+these differences involves scale. unlike the word tokens that serve as the basic elements of processing in the language
+transformers, visual elements can vary substantially in scale, a problem that receives attention in tasks such as object 
+detection. in exisiting transformer-based models, tokens are all of a fixed scale, a property unsuitable for vision applications
+
+{在language任务里面，基础元素就是word-token，transformer可以直接对basic elements做multi-head attention work.
+然而vision task里面，旧的vision transformer试图把一个vision patch当作一个vision-token，这里面包含了固定数量的pixels，这里出现了第一个问题，
+vision elements的scale can vary substantially. 所以如果patch-size is fixed，那么我们没有办法确定观察到处于不同scale的vision elements，
+所以swin-transformer提出了hierarchical architecture，在每个stage结束后，我都会有一个patch merging layer，可以把最近的四个patch-token
+concatenate在一起（最后在通过一个nn.Linear层来将token-dim减半），如此以来，这就像我们cnn中感知野不断增大一样，我们对patch的感知野也在增大，
+也就能看到不同scale的vision elements}
+
+another difference is the much higher resolution of pixels in images compared to words in passages of text. there exist many
+vision tasks such as semantic segmentation that require dense prediction at the pixel level, and this would be intractable
+for transformer on high-resolution images, as the computational complexity of its self-attention is quadratic to image size.
+to overcome these issues, we propose a general purpose transformer backbone, called swin transformer, which constructs 
+hierarchical feature maps and has linear computational complexity to image size. as illustrated in figure 1. swin transformer
+constructs a hierarchical representation by starting from small-sized patches (outlined in gray)
+with these hierarchical feature maps, the swin transformer model can conveniently leverage advanced techniques for dense
+prediction such as feature pyramid networks (FPN) or U-net. the linear computational complexity is achieved by computing
+self-attention locally
