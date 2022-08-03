@@ -137,3 +137,65 @@ transformer block is composed of LayerNorm (LN) layer, multi-head self attention
 and 2-layer MLP with GELU non-linearity. the window-based multi-head self-attention (W-MSA) module and
 the shifted window-based multi-head self-attention (SW-MSA) module are applied in the two successive transformer
 blocks, respectively. based on such window partition mechanism, continuous swin
+
+3.3 encoder 
+in the encoder, the C-dimensional tokenized inputs with the resolution of H/4 x W/4 are fed into the two 
+consecutive swin transfomer blocks to perform representation learning, in which the feature dimension and
+resolution remain unchanged. meanwhile, the patch merging layer will reduce the number of tokens (2x down-sampling)
+and increase the feature dimension to 2x the original dimension. this procedure will be repeated three times in
+the encoder.
+
+patch merging layer: 
+the input patches are divided into 4 parts and concatenated together by the patch merging layer. with such
+processing, the feature resolution will be down-sampled by 2x. and, since the concatenate operation results
+the feature dimension increasing by 4x, a linear layer is applied on the concatenated features to unify the 
+feature dimension to the 2x the original dimension.
+
+3.4 bottleneck
+since transformer is too deep to be converged [33], only two successive swin transformer blocks are used to
+constructed the bottleneck to learn the deep feature representation. in the bottleneck, the feature dimension
+and resolution are kept unchanged.
+
+3.5 decoder
+corresponding to the encoder, the
+
+{插一句，由于echo数据集里的图片尺寸为112*112，所以我在考虑要不要把最初的patch-size设置为2*2}
+the symmetric decoder is built based on swin transformer block. to this end, in contrast to the patch merging layer
+used in the encoder, we use the patch expanding layer in the decoder to up-sample the extracted deep features.
+the patch expanding layer reshapes the feature maps of adjacent dimensions into a higher resolution feature
+map (2x up-sampling) and reduces the feature dimension to half of the original dimension accordingly.
+
+patch expanding layer:
+take the first patch expanding layer as an example, before up-sampling, a linear-layer is applied on the input
+feature (H/32 x W/32 x 8C) to increaset the feature dimension to 2x the original dimension (H/32 x W/32 x 16C).
+then, we use rearrange operation to expand the resolution of the input features to 2x the input resolution and 
+reduce the feature dimension to quarter of the input dimension (H/16 x W/16 x 4C). we will discuss the impact of
+using patch expanding layer to perform up-sampling in section 4.5.
+
+3.6 skip connection
+similar to the unet, the skip connections are used to fuse the multi-scale featrues from the encoder from the 
+encoder with the up-sampled features. we concatenate the shallow features and the deep features together 
+to reduce the loss of spatial information caused by down-sampling. followed by a linear layer, the dimension of 
+the concatenated features is remained the same as the dimension of the up-sampled features. in section 4.5, we 
+will detailed discuss the impact of the number of skip connections on the performance of our model.
+
+{作者想讨论，使用patch expanding层和使用skip connection的model performance}
+
+4. experiments
+4.1 datasets
+synapse multi-organ segmentation dataset (synapse): 
+the dataset includes 30 cases with 3779 axial abdomm=inal clinical ct images. following, 
+
+4.5 ablation study
+in order to explore the influence of different factors on the model performance, we conducted ablation studies
+on synapse dataset. specifically, up-sampling, the number of skip-connections, input sizes, and model scales
+are discussed below.
+
+effect of up-sampling:
+corresponding to the patch merging layer in the encoder, we specially designed a patch expanding layer in the
+decoder to perform up-sampling and feature dimension increase. to explore the effectiveness of the proposed patch
+expanding layer, we conducted the experiments of swin-unet with bilinear interpolation, transposed convolution
+and patch expanding layer on synapse dataset. the experimental results in the table 3 indicate that the proposed
+swin-unet combined with teh patch expanding layer can obtain the better segmentation accuracy.
+
+
