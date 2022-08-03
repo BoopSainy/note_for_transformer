@@ -176,3 +176,28 @@ constructs a hierarchical representation by starting from small-sized patches (o
 with these hierarchical feature maps, the swin transformer model can conveniently leverage advanced techniques for dense
 prediction such as feature pyramid networks (FPN) or U-net. the linear computational complexity is achieved by computing
 self-attention locally
+
+swin transformer block, swin transformer is built by replacing teh standard multi-head self-attention (MSA)
+the standard transformer architecture and its adaptation for image classification both conduct global self-attention, where
+the relationships between a token and all other tokens are computed. the global computation leads to quadratic complexity
+with respect to the number of tokens, making it unsuitable for many vision problem requiring an immense set of tokens for
+dense prediction or to represent a high-resolution image.
+
+self-attention in non-overlapped windows:
+for efficient modeling, we propose to compute self-atttention within local windows. the windows are arranged to evenly
+partition the image in a non-overlapping manner. supposing each window contains MxM patches, the computational com
+
+after this shift, a batched window may be composed of several sub-windows that are not adjacent in the feature map, so a masking
+mechanism is employed to limit self-attention computation to within each sub-window.
+
+
+experiments:
+we conduct experiments on imagenet-1k image classification, coco object detection, and ade20k semantic segmentation. in
+the following, we first compare the proposed swin transformer arhitecture with the previous state-of-the-arts on the three
+tasks. then we ablate the important design elements of swin-transformer.
+
+results with regular imagenet-1k training:
+table 1(a) presents comparisions to other backbones, including both transformer-based and convnet-based, using regular imagenet-1k
+training.
+compared to the previous state-of-the-art transformer-based architecture, i.e. DeiT, Swin transformers noticeably surpass the
+counterpart deit architectures with similar complexities: 
