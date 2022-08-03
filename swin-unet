@@ -1,0 +1,139 @@
+note from paper "swin-unet: unet-like pure transformer for medical image segmentation"
+
+abstract:
+in the past few years, convolutional neural networks (cnns) have achieved milestnes in medical image
+analysis. especially, the deep neural networks based on u-shaped architecture and skip-connections have
+have been widely applied in a variety of medical image tasks. however, although cnn has achieved excellent 
+performance, it cannot learn global and long-range semantic information interaction well due to the locality
+of convolution operation. in this paper, we propose swin-unet, which is a unet-like pure transformer
+for medical image segmentation. the tokenized image patches are fed into the transformer-based U-shape 
+Encoder-Decoder architecture with skip-connections for local global semantic feature learning. Specifically,
+we use hierarchical Swin transformer with shifted windows as the encoder to extract context features.
+and a symmetric swin transformer based decoder with patch expanding layer is designed to perform
+the up-sampling operation to restore the spatial resolution of the feature maps. under the direct downsampling
+and up-sampling of the inputs and outputs by 4x, experiments on multi-organ and cardiac segmentation
+tasks demonstrate that the pure transformer-based u-shaped encoder-decoder network outperforms those methods
+with fully-convolution or the combination of transformer and convolution. the codes and trained models will
+be publicly available at https://github.com/HuCaoFighting/Swin-Unet.
+
+introduction
+benefiting from the development of deep learning, computer vision technology has been widely used in medical
+image analysis. image segmentation is an important part of medical image analysis. in particular, accurate
+and robust medical image segmentation can play a cornerstone role in computer-aided diagnosis and image-guided
+clinical surgery
+
+existing medical image segmentation methods mainly rely on fully convolutional neural network (FCNN) with
+U-shaped structure. the typical u-shaped network, unet, consists of a symmetric encoder-decoder with skip
+connections. in the encoder, a series of convolutional layers and continuous down-sampling layers are used
+to extract deep features with large receptive fields. then, the decoder up-samples the extracted deep
+features to the input resolution for pixel-level semantic prediction, and the high-resolution features
+of different scale from the encoder are fused with skip connections to alleviate the loss of spatial information
+caused by down-sampling. with such an elegant structural design, unet has achieved great success in a variety
+of medical imaging applications. following this techniqcal route, many algorithms such as 3d unet, res-unet, 
+unet++ and unet3+ have been developed for image and volumetric segmentation of various medical imaging 
+modalities. the excellent performance of these fcnn-based methods in cardiac segmentation, organ segmentation
+and lesion segmentation proves that cnn has a strong ability of learning discriminating features.
+
+currently, althought the cnn-based methods have achieved excellent performance in the field of medical image 
+segmentation, they still cannot fully mmet the strict requirements of medical applications for segmentation
+accuracy. image segmentation is still a challenge task in medical image analysis. since the intrinsoc
+locality of convolution operation, it is difficult for cnn-based approaches to learn explicit global
+and long-range semantic information interaction. some studies have tried to address this problem by
+using atrous convolutional layers, self-attention mechanisms, and image pyramids. however, these methods
+still have limitations in modeling long-range dependencies. recently, inspired by transformer's great success
+in the natural language process domain, researchers have tried to bring transformer into the vision domain.
+in, vision transformer is proposed to perform the image recognition task. taking 2d image patches with 
+positional embeddings as inputs and pre-training on large dataset, vit achieved comparable performance with
+cn-based methods. besides, data-efficient image transformer (deit) is presented in, which indicates that
+transformer can be trained on mid-size datasets and that a more robust transformer can be obtained by combining
+it with the distillation method. in, a hierarchical swin transformer is developed. take swin transformer as 
+vision backbone, the authors of 19 achieved state-of-the-art performance on image classification, object 
+detection and semantic segmentation. the success of vit, deit, and swin transformer in image recognition
+task demonstrates the potential for transformer to be applied in the vision domain
+
+motivated by the swin transformer's success, we propose swin-unet to leverage the power of transformer
+for 2d medical image segmentation in this work. to our best knowledge, swin-unet is a first pure transformer-
+based u-shape architecture that consists of endoer, bottleneck, decoder, and skip connections. encoder,
+bottleneck and decoder are all built based on swin transformer block. the input medical images are split
+into non-overlapping image patches. each patch is treated as a token and fed into the transformer-based encoder
+to learn deep feature representations. the extracted context features are then up-sampled by the decoder
+with patch expanding layer, and fused with the multi-scale features from the encoder via skip connections,
+so as to restore the spatial resolution of the feature maps and further perform segmentation prediction. 
+extensive experiments on multi-organ and cardiac segmentation accuracy and robust generalization ability.
+concretely, our contributions can be summarized as: (1) based on swin transformer block, we build a symmetric
+encoder-decoder architecture with skip connections. in the encoder, self-attention from local o global is 
+realized; in the decoder, the global features are up-sampled to the input resolution for corresponding pixel-
+level segmentation and feature dimension increase without using convolution or interpolation operation. 
+
+{看看它的encoder是用了原版的swin-transformer block还是更新了，为什么老说自己的可self-attention globally；
+看看它是怎么设计decoder以保持pure transformer}
+
+(2) a patch expanding layer is developed to achieve up-sampling and feature dimension increase without using 
+convolution or interpolation operation. (3) it is found in the experiment that skip connection is also effective
+for transformer, so a pure transformer-based u-shaped encoder-decoder architecture with skip connection is 
+finally constructed, named swin-unet
+
+
+related work:
+cnn-based methods: early medical image segmentation methods are mainly contour-based and traditional machine
+learning-based algorithms. with the development of deep cnn, unet is proposed in 3 for medical image 
+segmentation. due to the simplicity and superior performance of the u-shaped structure, various unet-like
+methods are constantly emerging, such as res-unet, dense-unet, unet++ and unet3+. and it is also introduced
+into the field of 3d medical image segmentation, such as 3d-unet and v-net. at present, cnn-based methods
+have achieved tremendous success in the field of medical image segmentation due to its powerful representation 
+ability
+
+vision transformers: transformer was first proposed for the machine translation task in 15. in the nlp domain, 
+the transformer-based methods have achieved the state-of-the-art performance in various tasks. driven by 
+transformer's success, the researchers introduced a pioneering vision transformer (vit) in 17, which achieve
+the impressive speed-accuracy trade-off on image recognition task. compared with cnn-based methoods, the 
+drawback of vit is that it requires pre-training on its own large dataset. to alleviate the difficulty in
+training vit, deit describes severa training strategies that allow vit to train well on imagenet-1k. recently,
+several excellent works have been done based on vit. it is worth mentioning that an efficient and effective
+hierarchical vision transformer, called swin transformer, is proposed as a vision backbone in 19. based on 
+the shifted windows mechanism, swin transformer achieved the state-of-the-art performance on various vision
+tasks including image classification, object detection and semantic segmentation. in this work, we attempt 
+to use swin transformer block as basic unit to build a u-shaped encoder-decoder architecture with skip
+connections for medical image segmenttaion, thus providing a benchmar comparison for the developemnt of
+transformer in the medical image field.
+
+self-attention / transformer to complement cnns: in recent years, researchers have tried to introduce self-
+attention mechanism into cnn to improve the performance of the networ 13. in 12, the skip connections 
+with additive attention gate are intergrated in u-shaped architecture to perform medical image segmentation.
+however, this is still the cnn-based methods. currently, some efforts are being made to combine cnn
+and transformer to break the domincance of cnns in medical image segmentation. in 2, the authors combined 
+transformer with cnn to constitute a strong encoder for 2d medical image segmentation. similar to 2, 27 and 28 
+use the complementarity of transformer and cnn to improve the segmentation capability of the model.
+currently, various combinations of transformer with cnn are applied in multi-modal brain tumor segmentation
+and 3d medical image segmentation. different from the above methods, we try to explore the application 
+potential of pure transformer in medical image segmentation.
+
+3methods:
+3.1architecture overview:
+
+the overall architecture of the proposed swin-unet is presented in figure 1. swin-unet consists of encoder,
+bottleneck, decoder, and skip connections. the basic unit of swin-unet is swin transformer block. for the
+encoder, to transform the inputs into sequence embeddings, the medical images are split into non-overlapping
+patches with patch size of 4x4. by such partition approach, the feature dimension of each patch becomes to
+4x4x3=48. furthermore, a linear embedding layer is applied to projected feature dimension into arbitrary 
+dimension (represented as C). the transformed patch tokens pass through several swin transformer blocks and 
+patch merging layers to generate the hierarchical feature representations. specifically, patch merging
+layer is responsible for down-sampling and increase patch-token dimension, and swin transformer block 
+is responsible for feature representation learning, inspired by unet, we design a symmetric transformer-based
+decoder. the decoder is composed of swin transformer block and patch expanding layer. the extracted 
+context features are fused with multi-scale features from encoder via skip connections to complement
+the loss of spatial caused by down-sampling. in contrast to patch merging layer, a patch expanding
+layer is specially designed to perform up-sampling. the patch expanding layer reshapes feature maps of
+adjacent dimensions into a large feature maps with 2x up-sampling of resolution. in the end, the last
+patch expanding layer is used to perform 4x upsampling to restore the resolution of the feature maps to the 
+input resolution (WxH), and then a linear projection layer is applied on these up-sampled features to 
+output the pixel-level segmentation predictions. we would elaborate each block in the following
+
+
+3.2 swin transformer block:
+different from the conventional multi-head self attention (MSA) module, swin transformer block is constructed
+based on shifted windows. in figure2, two consecutive swin transformer blocks are presented. each swin
+transformer block is composed of LayerNorm (LN) layer, multi-head self attention module, residual connection
+and 2-layer MLP with GELU non-linearity. the window-based multi-head self-attention (W-MSA) module and
+the shifted window-based multi-head self-attention (SW-MSA) module are applied in the two successive transformer
+blocks, respectively. based on such window partition mechanism, continuous swin
