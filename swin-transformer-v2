@@ -1,0 +1,32 @@
+轰动泥阿里嘎多我的脑子，再加加班看懂swin-transformer-v2吧！
+
+{read official network code and paper}：
+paper: swin transformer v2: scaling up capacity and resolution:
+
+NOTE: here is the record for reading paper:
+
+abstract: large-scale nlp models have been shown to significantly improve the performance on language tasks with no signs of 
+saturation. they also demonstrate amazing few-shot capabilities like that of human beings.
+
+{knowledge of "few shot"}
+wouldn't it be frustrating if your smartphone needed to have thousands of pictures of you to recognize you and get unlocked?
+few-shot learning, or one-shot learning in this case, is a hot topic in machine learning where the model makes predictions 
+based on a few training examples.
+
+what is few-shot learning?
+few-shot learning, also referred to as low-shot learning in few sources, is a type of machine learning method where the training 
+dataset contains limited information.
+
+the common practice for machine learning applications is to feed as much data as the model can take. this is because in most 
+machine learning applications feeding more data enables the model to predict beteer. however, few shot learning aims to build
+accurate machine learning models with less training data. as the dimension of input data is a factor that determines resource
+costs (e.g. time costs, computational costs, etc.), companies can reduce data analysis/ machine learning costs by using 
+few shot learning
+
+this paper aims to explore large-scale models in computer vision. we tackle three major issues in training and application of 
+large vision models, including training instability, resolution gaps between pre-training and fine-tuning, and hunger on labelled data.
+three main techniques are proposed: 1) a residual post norm method combined with cosine attention to improve training stability;
+2) a log spaced continuous position bias method to effectively transfer models pre-trained using low-resolution images to downstream
+tasks with high-resolution inputs; 3) a self-supervised pretraining method, simmim, to reduce the needs of vast labeled images.
+
+more importantly, unlike large language models, the existing large vision models are applied to the image classification task only.
