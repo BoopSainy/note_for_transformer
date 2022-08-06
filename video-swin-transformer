@@ -1,0 +1,30 @@
+read paper "video swin transformer"
+
+abstract
+the vision community is witnessing a modeling shift from cnns to transformers, where pure transformer architectures have attained
+top accuracy on the major video recognition benchmarks. these video models are all built on transformer layers that globally connect
+patches across the spatial and temporal dimensions. in this paper, we instead advocate an inductive bias of locality in video transformers,
+which leads to a better speed-accuracy trade-off compared to previous approaches which compute self-attention globally even with spatial-
+temporal factorization.  the locality of the proposed video architecture is realized by adapting the swin transformer designed for the image
+domian, while continuing to leverage the power of pre-trained image models. our approach achieves state-of-the-art accuracy on a borad range 
+of video recognition benchmarks, including on action recognition (84.9 top-1 accuracy on kinetics-400 and 85.9 top-1 accuracy on kinetics-600
+with-20x less pre-training data and -3x smaller model size) and temporal modeling ()
+
+
+introduction:
+convolution-based backbone architectures have long dominated visual modeling in computer vision. however, a modeling shift is currently underway
+on backbone architectures for image classifictaion from convolutional neural networks to transformers. his trend began with the introduction
+of vision transformer (vit), which globally models spatial relationships on non-overlapping image patches with the standard transformer encoder.
+the great success on vit on images has led to investigation of transformer-based architectures for video-based recognition tasks.
+previously for convolutional models, backbone architectures for video were adapted from those for images simply by extending the modeling through
+the temporal axis. for example, 3d convolution is a direct extension of 2d convolution for joint spatial and temporal modeling at the operator
+level. as joint spatiotemporal modeling is not economical or easy to optimize,factorization of the spatial and temporal domains
+were proposed to achieve a better speed-accuracy tradeoff. in the initial attempts at transformer-based video recognition, a factorization approach
+is also employed, via a factorized encoder or factorized self-attention. this has been shown to greatly reduce model size without a 
+substantial drop in performance.
+
+in this paper, we present a pure-transformer backbone architecture for video recognition that is found to surpass the factoried model in 
+efficiency. it achieves this by taking advantage of the inherent spatiotemporal locality of videos, in which pixels that are closer to each other
+in spatiotemporal distance are more likely to be correlated. because of this property, full spatiotemporal self-attention can be well approximated
+by self-attention computed locally, at a significant saving in computation and model size.
+
