@@ -28,3 +28,79 @@ efficiency. it achieves this by taking advantage of the inherent spatiotemporal 
 in spatiotemporal distance are more likely to be correlated. because of this property, full spatiotemporal self-attention can be well approximated
 by self-attention computed locally, at a significant saving in computation and model size.
 
+deit integrates several training strategies that allow vit to also be effective using the smaller imagenet-1k dataset. swin transformer
+further introduces the inductive biases of locality, hierarchy and translation invariance, which enable it to serve as a general-purpose 
+backbone for various image recognition tasks
+
+the great success of image transformers has led to investigation of transformer-based architectures for video-based recognitiono tasks. vtn proposes 
+to add a temporal attention encoder on top of the pre-trained vit, which yields good performance on video action recognition. timesformer studies
+five different variants of space-time attention and suggest a factorized space-time attention for its strong speed-accuracy tradeoff. vivit examines 
+four factorized designs of spatial and temporal attention for the pretrained vit model, and suggests an architecture similar to vtn that achieves state-
+of-the-art performance on kinetics dataset. mvit is a multi-scale vision transformer for video recognition trained from scratch that reduces
+computation by pooling attention for
+all these studies are based on global self-attention modules. in this paper, we first investigate spatiotemperal locality and then empirically
+show that the video swin transformer with spatiotemporal locality bias surpass the performance of all the other vision transformers on various
+video recognition tasks.
+
+3 video swin transformer
+3.1 overall architecture
+the overall architecture of the proposed video swin transformer is shown in figure 1, which illustrates its tiny verison (swin-t). 
+the input video is defined to be of size txhxwx3, consisting of t frames which each contain hxwx3 pixels. in vidoe swin transformer, we treat 
+each 3d patch of size 2x4x4x3. thus, the 3d patch partition layer obtains t/2 * h/4 * h/4 3d tokens, with each patch/token consiting of 
+a 96-dimensional feature. a linear embedding layer is then applied to project the features of each token to an arbitrary dimension denoted by
+C.
+
+following the prior art, we do not down sample along the temporal dimension. this allows us to strictly follow the hierarchical architecture
+of the original swin transformer, which consists of four stages and performs 2x spatial downsampling in the patch merging layer of each stage.
+the patch merging layer concatenates the features of each group of 2x2 spatially neighboring patches and applies a linear layer to project
+the concatenated features to half of their dimension. for example, the linear layer in the second stage projects 4c-dimensional features for 
+each token to 2c dimensions.
+
+the major component of architecture is the video swin transformer block, which is built by replacing the multi-head self-attention module in the 
+standard transformer layer with the 3d shifted window based multi-head self-attention module
+
+specifically, a video transformer block consists of a 3d shitfed window based MSA module followed by a feed-forward network, specifically a 2-layer
+mlp, with gelu non-linearity in between. layer normalization is applied before each msa module and ffn, and a residual connection is applied 
+after each module. the computational formulas of the video swin transformer block are given in eqn 1.
+
+3.2 3d shifted window based msa module
+though the number of windows is increased, the efficient batch computation in [28] for the shifted configuration can be followed, such that the final
+number of windows for computation is still 8
+
+compared to images, videos require a much larger number of input tokens to represent them, as videos additionally have a temporal dimension.
+a global self-attention module would thus be unsuitable for video tasks as this would lead to enormous computation and memory costs.
+here, we follow swin transformer by introducing a locality inductive bias to the self-attention module, which is later shown to be effective for
+video recognition
+
+multi-head self-attention on non-overlapping 3d windows: multi-head self-attention (msa) mechanisms on each non-overlapping 2d window has 
+been shown to be both effective and efficient for image recognition. here, we straightforwardly extend this design to process video input.
+given a video composed of t' x h' x w' 3d tokens and a 3d window size of pxmxm, the windows are arranged to evenly partition the video input in a
+non-overlapping manner. that is, the input tokens are partition into [t'/p] x [h'/m] x [w'/m] non-overlapping 3d windows. for example, as shown
+in figure 3, for an input size of 8x8x8 tokens and a window size of 4x4x4, the number of windows in layer l would be 2x2x2 = 8. and the multi-head
+self-attention is performed within each 3d window.
+
+3d shifted windows: as the multi-head self-attention mechanism is applied within each non-overlapping 3d window, there lacks connections 
+across different windows, which may limit the representation power of the architecture. thus, we extend the shifted 2d window mechanism
+of swin transformer to 3d windows for the purpose of introducing cross-window connections while maintaining the efficient computation of 
+non-overlapping window based self-attention.
+
+given that the number of input 3d tokens is t' x h' x w' and the size of each 3d window is pxmxm, for two consecutive layers, the self-attention 
+module in the first layer uses the regular window partition strategy such that we obtain [t'/p] x [h'/m] x [w'/m] non-overlapping 3d windows.
+for the self-attention module in the second layer, the window partition configruation is shifted along the temporal, height and width axes by (p/2, 
+m/2, m/2) tokens from that of the preceding layers self-attention module.
+
+we illustrate this with an example in figure 3. the input size is 8x8x8, and the window size is 4x4x4. as layer l adopts regular window partitioning,
+the number of windows in the layer l is 2x2x2=8. for layer l+1, as the windows are shifted by (p/2, m/2, m/2) = (2, 2, 2) tokens, the number of windows
+becomes 3x3x3=27. though the number of windows is increased, the efficient batch computation in [28] for the shifted configuration can be followed,
+such that the final number of windows for computation is stil 8.
+
+
+3d relative position bias:
+numerous previous works have shown that it can be advantageous to include a relatvie position bias to each heads in self-attention computation. thus,
+we follow [28] by introducing 3d relative position bias for each head as 
+
+{之所以，relative-position-bias-table为每一头都准备了一份，这里我们可以理解为，是因为，对于不同的头，最终的attention-weight (in shape of (seq_len, seq_len))对
+qk之间的特征相似度和不同patch之间的相对位置所看重的比例是不同的。有可能在头一中，当pivot patch是1号时，它和2号k得到的特征相似度占最后attn-weight的0.5，剩下0.5由
+1号patch和2号patch之间的relative-position bias影响；但是当在头二中，同样是1号是pivot patch，在与2号patch进行attn-weight计算时，可能这时候模型认为0.9都是由二者的
+relative-position-bias影响，于是这个时候的rela-pos-bia就要比头一时同样位置的bias大很多。}
+这也是为什么我们需要为每一头都准备一份relative position bias table
