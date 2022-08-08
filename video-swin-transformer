@@ -104,3 +104,28 @@ qk之间的特征相似度和不同patch之间的相对位置所看重的比例�
 1号patch和2号patch之间的relative-position bias影响；但是当在头二中，同样是1号是pivot patch，在与2号patch进行attn-weight计算时，可能这时候模型认为0.9都是由二者的
 relative-position-bias影响，于是这个时候的rela-pos-bia就要比头一时同样位置的bias大很多。}
 这也是为什么我们需要为每一头都准备一份relative position bias table
+
+3.3 architecture variants:
+following 28, we introduce four different versions of video swin transformer. the architecture hyperparameters of these model variants are:
+swint-T: c = 96, layer numbers = {2, 2, 6, 2}
+
+where C denotes the channel number of the hidden layers in the first stage. these four versions are about 0.25x, 0.5x, 1x and 2x the base
+mo0del size and computational complexity, respectively. the window size is set to p = 8, and m = 7 by default. the query dimension 
+of each head is d = 32,
+
+3.4 initialization from pre-trained model
+as our architecture is adapted from swin transformer, our model can be initialized by its strong pretrained model on a large-scale dataset.
+ compared to the original swin transformer, only two building blocks in video swin transformers have different shapes, the linear embedding layer
+ in the first stage and the relative position biases in the video swin transformer block
+ 
+ for our model, the input token is inflated to a temporal dimension of 2, thus the shape of the linear embedding layer becomes 96xC from 
+ 
+ implementation details:
+ unless otherwise mentioned, for all model variants, we sample a clip of 32 frames from each full length video using a temporal stride of 2
+ and {从完整的视频里，步长为2的采样32帧，空间维度为224x224，这样再配上我们的patch partition size -> 2, 4, 4，我们可以得到16x56x56个patch} spatial
+ size of 224x224, resulting in 16x56x56 input 3d tokens. following [28], an increasing degree of stochastic depth and weight decay is employed for
+ larger models, i.e 0.1, 0.1, 0.3 stochastic depth rate and 0.02, 0.02, 0.05, weight decay for swin-t, swin-s, and swin-b, respectively.
+ 
+ for inference, we follow 1 by using 4x3 views, where a video is uniformly sampled in the temporal dimension as 4 clips, and for each clip,
+  the shorter spatial side is scaled to 224 pixels and we take 3 crops of size 224x224 that cover the longer spatial axis.
+  
