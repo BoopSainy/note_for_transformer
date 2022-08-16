@@ -1,0 +1,20 @@
+paper reading "babynet: residual transformer module for birth weight prediction on fetal ultrasound video"
+
+abstract:
+predicting fetal weight at birth is an important aspect of perinatal care, particularly in the context of antenatal
+management, which includes the planned timing and the mode of delivery. Accurate prediction of weight using prenatal
+ultrasound is challenging as it requires images of specific fetal body parts during advanced pregnancy which is 
+difficult to capture due to poor quality of images caused by the lack of amniotic fuild. As a consequence, predictions 
+which rely on standard methods often suffer from significant errors. in this paper we proose the residual transformer
+module which extends a 3d resnet-based network for analysis of 2d+t spatiotemporal ultrasound video scans. our 
+end-to-end method, called babynet, automatically predicts fetal birth weight based on fetal ultrasound video scans.
+we evaluate babynet using a dedicated clinical set comprising 225 2d fetal ultrasound videos of pregnancies from 
+75 patients performed one day piror to delivery. experimental results show that babynet outperforms several
+state-of-the-art methods and estimates the weight at birth with accrauct comparable to human experts. furthermore,
+combining estimates provided by human experts with those computed by babynet yields the best results, outperforming
+either of other methods by a significant margin. the source code ...
+
+{seemingly adjust a r3d-18 architecture with transformer blocks}
+
+introduction:
+fetal birth weight
