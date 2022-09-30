@@ -81,4 +81,6 @@ attention
 scaled dot product attention
 the core concept behind self-attention is the scaled dot product attention. our goal 
 is to have an attention mechanism with which any element in a sequence can attend
-to any other
+to any other..
+
+
