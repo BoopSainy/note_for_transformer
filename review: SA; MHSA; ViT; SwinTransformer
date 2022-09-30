@@ -1,0 +1,84 @@
+source: 
+1. attention + multi-head self-attention
+https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial6/Transformers_and_MHAttention.html
+
+
+
+
+review:
+transformers and multi-head attention:
+
+in this tutorial, we will discuss one of the most impactful architectures of the
+last 2 years: the Transformer model. since the paper attention is all you need by
+Vaswani et al. had been published in 2017, the Transformer architecture has 
+continued to beat benchmarks in many domains, most importantly in natural language
+processing. transformers with an incredible amount of parameters can generate long,
+convincing essays, and opened up new application fields of AI. as the type of the
+Transformer architecture seems not to come to an end in the next years, it is 
+important to understand how it works, and have implemented it yourself, which we 
+will do in this notebook.
+
+despite the huge success of transformers in nlp, we will not include the nlp domain
+in our notebook here. why? firstly, the master ai at uva offers many great nlp
+course that will take a closer look at the application of the transformer architecture
+in nlp. secondly, assignment 2 takes already a closer look at language generation on
+character level.... nlp is the domain the transformer architecture has been originally
+proposed for and had the greatest impact on, but it also accelerated research in 
+other domains, recently even computer vision. thus, we focus here on what makes the
+transformer and self-attention so powerful in general. in tutorial 15, we will 
+discuss the application of transformers in computer vision.
+
+below, we import our standard libraries. similarly as in tutorial 5, we will use...
+
+what is attention?
+the attention mechanism describes a recent new group of layers in neural networks 
+that has attracted a lot of interest in the past few years, especially in sequence
+tasks. there are a lot of different possible definitions of "attention" in the 
+literature, but the one we will use here is the following: the attention mechanism
+describes a weighted average of (sequence) elements with the weights dynamically 
+computed based on an input query and elements' keys. so what does this exactly mean?
+the goal is to take an average over the features of multiple elements. however, 
+instead of weighting each element equally, we want to weight them depending on their
+actual values. in other words, we want to dynamically decide on which inputs we want
+to give more attention than others. in particular, an attention mechanism has usually
+four parts we need to specify:
+
+query: the query is a feature vector that describes what we are looking for in the 
+sequence, i.e. what would we maybe want to pay attention to.
+
+keys: for each input element, we have a key which is again a feture vector. this feature
+vector roughly describes what the element is "offering", or when it might be important.
+the keys should be designed such that we can identify the elements we want to pay
+attention to based on the query.
+
+values: for each input element, we also have a value vector. this feature vector is 
+the one we want to average over.
+
+score function: to rate which elements we want to pay attention to, we need to specify
+a score function f_attn. the score function takes the query and a key as input, and 
+output the score/attention weight of the query-key pair. it is usually implemented by
+simple similarity metrics like a dot product.
+
+the weights of the average are calculated by a softmax over all score function outputs.
+hence, we assign those value vectors a higher weight whose corresponding key is most
+similar to the query. if we try to describe it with pseudo-math, we can write:
+
+for every word, we have one key and one value vector. the query is compared to all keys
+with a score function (in this case the dot product) to determine the weights. the
+softmax is not visualized for simiplicity. finally, the value vectors of all words are
+averaged using the attention weights.
+
+most attention mechanisms differ in terms of what queries they use, how the key and 
+value vectors are defined, and what score function is used. the attention applied
+inside the transformer architecture is called self-attention. in self-attention, each
+sequence element provides a key, value, and query. for each element, we perform
+an attention layer where based on its query, we check the similarity of the all 
+sequence elements' keys, and returned a different, averaged value vector for each element.
+we will now go into a bit more detail by first looking at the specific implementation
+of the attention mechanism which is in the transformer case the scaled dot product
+attention
+
+scaled dot product attention
+the core concept behind self-attention is the scaled dot product attention. our goal 
+is to have an attention mechanism with which any element in a sequence can attend
+to any other
